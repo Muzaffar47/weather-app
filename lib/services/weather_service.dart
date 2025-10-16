@@ -6,7 +6,8 @@ import '../models/forecast_data.dart';
 import '../models/city_suggestion.dart';
 
 class WeatherService {
-  final String apiKey = const String.fromEnvironment('OPEN_WEATHER_API_KEY');
+  // final String apiKey = const String.fromEnvironment('OPEN_WEATHER_API_KEY');
+  final String apiKey = '4a4970db346fe16036b39ba45d46bc61';
   final String baseUrl = 'https://api.openweathermap.org/data/2.5';
 
   // --- 1. Fetch Current Weather by Coordinates ---

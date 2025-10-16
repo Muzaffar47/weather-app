@@ -58,7 +58,7 @@ class _HourlyChartState extends State<HourlyChart> {
         Container(
           height: 200,
           // Final padding adjustment
-          padding: const EdgeInsets.fromLTRB(5, 20, 10, 5),
+          padding: const EdgeInsets.fromLTRB(10, 20, 20, 2.5),
           decoration: BoxDecoration(
             color: Colors.white.withOpacity(0.15),
             borderRadius: BorderRadius.circular(15),

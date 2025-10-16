@@ -99,8 +99,8 @@ class DailyForecastCard extends StatelessWidget {
                 .map((day) {
                   final index = forecast.indexOf(day);
                   return Container(
-                    height: 36, // compact controlled height
-                    padding: EdgeInsets.zero,
+                    height: 40, // compact controlled height
+                    padding: EdgeInsets.only(top: 2.0),
                     margin: EdgeInsets.zero,
                     child: Row(
                       children: [
