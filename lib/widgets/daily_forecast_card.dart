@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:weather_icons/weather_icons.dart';
 import '../models/daily_forecast_data.dart';
 import '../utils/icon_mapper.dart';
 

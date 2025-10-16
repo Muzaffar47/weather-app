@@ -1,6 +1,8 @@
+import 'package:intl/intl.dart';
+
 class ForecastData {
   final DateTime dateTime;
-  final double temperature; // In Celsius
+  final double temperature;
   final String iconCode;
 
   ForecastData({
@@ -10,12 +12,12 @@ class ForecastData {
   });
 
   factory ForecastData.fromJson(Map<String, dynamic> json) {
-    double kelvinTemp = (json['main']['temp'] as num).toDouble();
-    double celsiusTemp = kelvinTemp - 273.15;
+    // FIX: Get temperature directly. It is already Celsius.
+    double temperature = (json['main']['temp'] as num).toDouble();
 
     return ForecastData(
       dateTime: DateTime.fromMillisecondsSinceEpoch(json['dt'] * 1000),
-      temperature: celsiusTemp,
+      temperature: temperature,
       iconCode: json['weather'][0]['icon'] as String,
     );
   }

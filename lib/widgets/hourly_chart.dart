@@ -125,8 +125,9 @@ class _HourlyChartState extends State<HourlyChart> {
                     reservedSize: 35,
                     getTitlesWidget: (value, meta) {
                       if (value.toInt() < 0 ||
-                          value.toInt() >= widget.forecast.length)
+                          value.toInt() >= widget.forecast.length) {
                         return const SizedBox.shrink();
+                      }
                       final dateTime = widget.forecast[value.toInt()].dateTime;
                       final formattedTime = DateFormat('j').format(dateTime);
                       return Padding(

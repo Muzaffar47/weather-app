@@ -1,17 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:geolocator/geolocator.dart'; // REQUIRED for Position
-import '../services/weather_service.dart'; // REQUIRED for WeatherService
-import '../services/location_service.dart'; // REQUIRED for LocationService
-import '../models/weather_data.dart'; // REQUIRED for WeatherData
-import '../models/forecast_data.dart'; // REQUIRED for ForecastData
-import '../models/daily_forecast_data.dart'; // REQUIRED for DailyForecastData
-
-// NOTE: The previous code had redundant imports. This version is cleaned up.
+import 'package:geolocator/geolocator.dart';
+import '../services/weather_service.dart';
+import '../services/location_service.dart';
+import '../models/weather_data.dart';
+import '../models/forecast_data.dart';
+import '../models/daily_forecast_data.dart';
 
 enum WeatherState { initial, loading, loaded, error }
 
 class WeatherProvider with ChangeNotifier {
-  // Service classes (assuming they are implemented correctly)
+  // Service classes
   final WeatherService _weatherService = WeatherService();
   final LocationService _locationService = LocationService();
 
@@ -29,25 +27,22 @@ class WeatherProvider with ChangeNotifier {
   WeatherState get state => _state;
   String? get errorMessage => _errorMessage;
 
-  // --- Mock Data Function ---
-  void _mockDailyForecast() {
-    _dailyForecast = List.generate(7, (index) {
-      final date = DateTime.now().add(Duration(days: index));
-      return DailyForecastData(
-        date: date,
-        tempMax: 30.0 + index.toDouble(),
-        tempMin: 20.0 + index.toDouble(),
-        // Varying icons for visual effect
-        iconCode: (index % 3 == 0)
-            ? '01d'
-            : (index % 3 == 1)
-            ? '10d'
-            : '04d',
-      );
-    });
+  // --- Core Data Fetch Logic (Reusable) ---
+  // This function fetches all necessary data (hourly and daily) for a given location.
+  Future<void> _fetchAllWeatherData(double lat, double lon) async {
+    // 1. Fetch current and hourly forecast (existing live calls)
+    _currentWeather = await _weatherService.fetchCurrentWeather(lat, lon);
+    _hourlyForecast = (await _weatherService.fetchWeatherForecast(
+      lat,
+      lon,
+    )).take(8).toList();
+
+    // 2. LIVE DATA INTEGRATION: Fetch 7-day daily forecast using One Call API
+    // Assumes WeatherService has the fetchDailyForecast method implemented.
+    _dailyForecast = await _weatherService.fetchDailyForecast(lat, lon);
   }
 
-  // --- Main Fetch Function ---
+  // --- Main Fetch Function: By GPS Location ---
   Future<void> fetchWeatherForCurrentLocation() async {
     _state = WeatherState.loading;
     notifyListeners();
@@ -59,15 +54,8 @@ class WeatherProvider with ChangeNotifier {
       double lat = position.latitude;
       double lon = position.longitude;
 
-      // 2. Fetch data (assuming success)
-      _currentWeather = await _weatherService.fetchCurrentWeather(lat, lon);
-      _hourlyForecast = (await _weatherService.fetchWeatherForecast(
-        lat,
-        lon,
-      )).take(8).toList();
-
-      // 3. Populate mock daily data
-      _mockDailyForecast();
+      // 2. Fetch all data using coordinates
+      await _fetchAllWeatherData(lat, lon);
 
       _state = WeatherState.loaded;
     } catch (e) {
@@ -80,21 +68,27 @@ class WeatherProvider with ChangeNotifier {
     }
   }
 
+  // --- Main Fetch Function: By City Search ---
   Future<void> fetchWeatherForCity(String cityName) async {
     _state = WeatherState.loading;
     notifyListeners();
     _errorMessage = null;
 
     try {
+      // 1. Fetch current weather by city name (required to get new lat/lon)
       final newWeather = await _weatherService.fetchCurrentWeatherByCity(
         cityName,
       );
 
-      // NOTE: For a real app, you would fetch forecast using coordinates from newWeather.
-      // For this step, we'll only update current weather and mock the forecast data.
+      // 2. Extract coordinates from the result
+      double lat = newWeather.latitude;
+      double lon = newWeather.longitude;
 
+      // 3. Update current weather state immediately
       _currentWeather = newWeather;
-      _mockDailyForecast(); // Call mock data to refresh daily list too
+
+      // 4. Fetch all other data using the new coordinates
+      await _fetchAllWeatherData(lat, lon);
 
       _state = WeatherState.loaded;
     } catch (e) {

@@ -13,18 +13,20 @@ class DailyForecastData {
     required this.iconCode,
   });
 
-  // NOTE: This factory is a simplified model based on OpenWeatherMap's general structure.
+  String get dayOfWeek => DateFormat('E').format(date);
+
+  // NOTE: This factory is used by the WeatherService to process the 3-hour list.
+  // The service passes already-processed Celsius values, so this model itself needs
+  // no conversion logic (assuming the service passes correct metric data).
   factory DailyForecastData.fromJson(Map<String, dynamic> json) {
     final tempMap = json['temp'] as Map<String, dynamic>;
 
     return DailyForecastData(
       date: DateTime.fromMillisecondsSinceEpoch(json['dt'] * 1000),
-      // Convert from Kelvin to Celsius
-      tempMax: (tempMap['max'] as num).toDouble() - 273.15,
-      tempMin: (tempMap['min'] as num).toDouble() - 273.15,
+      // Assuming correct Celsius value is passed from service/API
+      tempMax: (tempMap['max'] as num).toDouble(),
+      tempMin: (tempMap['min'] as num).toDouble(),
       iconCode: json['weather'][0]['icon'] as String,
     );
   }
-
-  String get dayOfWeek => DateFormat('E').format(date); // e.g., "Mon", "Tue"
 }
